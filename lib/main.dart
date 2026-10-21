@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
+
+import 'cubit/favorit_cubit.dart';
+import 'cubit/pengajuan_cubit.dart';
+import 'cubit/theme_cubit.dart';
 import 'model/pengajuan_model.dart';
 import 'model/pesan_chat_model.dart';
 import 'navigation/app_routes.dart';
+import 'theme/app_theme.dart';
 
 void main() {
   runApp(
@@ -11,7 +17,14 @@ void main() {
         ChangeNotifierProvider(create: (_) => PengajuanModel()),
         ChangeNotifierProvider(create: (_) => PesanChatModel()),
       ],
-      child: const NusantaraCerdasApp(),
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider(create: (_) => FavoritCubit()),
+          BlocProvider(create: (_) => PengajuanCubit()),
+          BlocProvider(create: (_) => ThemeCubit()),
+        ],
+        child: const NusantaraCerdasApp(),
+      ),
     ),
   );
 }
@@ -21,36 +34,20 @@ class NusantaraCerdasApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Nusantara Cerdas Mobile',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        // Palet 2-3 warna solid: Navy, Slate, dan Putih Bersih (Tanpa Gradasi)
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF1E3A8A),
-          primary: const Color(0xFF1E3A8A),
-          secondary: const Color(0xFF475569),
-          surface: Colors.white,
-        ),
-        scaffoldBackgroundColor: const Color(0xFFF8FAFC),
-        useMaterial3: true,
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Color(0xFF1E3A8A),
-          foregroundColor: Colors.white,
-          elevation: 0,
-          centerTitle: false,
-          titleTextStyle: TextStyle(
-            color: Colors.white,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-          iconTheme: IconThemeData(color: Colors.white),
-        ),
-      ),
-      initialRoute: AppRoutes.beranda,
-      routes: AppRoutes.daftarRoute(),
-      onGenerateRoute: AppRoutes.bentukRoute,
-      onUnknownRoute: AppRoutes.routeTidakDikenal,
+    return BlocBuilder<ThemeCubit, ThemeMode>(
+      builder: (context, themeMode) {
+        return MaterialApp(
+          title: 'Nusantara Cerdas Mobile',
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: themeMode,
+          initialRoute: AppRoutes.beranda,
+          routes: AppRoutes.daftarRoute(),
+          onGenerateRoute: AppRoutes.bentukRoute,
+          onUnknownRoute: AppRoutes.routeTidakDikenal,
+        );
+      },
     );
   }
 }

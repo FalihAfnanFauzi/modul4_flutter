@@ -1,3 +1,5 @@
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../cubit/favorit_cubit.dart';
 import 'package:flutter/material.dart';
 import '../navigation/app_routes.dart';
 
@@ -84,7 +86,39 @@ class HalamanLayanan extends StatelessWidget {
                 color: theme.colorScheme.onSurfaceVariant,
               ),
             ),
-            trailing: const Icon(Icons.chevron_right),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                BlocSelector<FavoritCubit, Set<String>, bool>(
+                  selector: (favoritSet) => favoritSet.contains(item['namaLayanan']),
+                  builder: (context, isFav) {
+                    return IconButton(
+                      icon: Icon(
+                        isFav ? Icons.star_rounded : Icons.star_border_rounded,
+                        color: isFav ? const Color(0xFFEAB308) : Colors.grey,
+                      ),
+                      tooltip: isFav ? 'Hapus Favorit' : 'Tandai Favorit',
+                      onPressed: () {
+                        context.read<FavoritCubit>().alihkan(item['namaLayanan']!);
+                        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              isFav
+                                  ? 'Dihapus dari layanan favorit.'
+                                  : 'Ditambahkan ke layanan favorit!',
+                            ),
+                            behavior: SnackBarBehavior.floating,
+                            duration: const Duration(seconds: 1),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+                const Icon(Icons.chevron_right),
+              ],
+            ),
             onTap: () async {
               final hasil = await Navigator.pushNamed(
                 itemContext,

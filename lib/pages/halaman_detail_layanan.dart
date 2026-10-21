@@ -1,3 +1,4 @@
+import '../cubit/pengajuan_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../model/pengajuan_model.dart';
@@ -84,6 +85,7 @@ class _HalamanDetailLayananState extends State<HalamanDetailLayanan> {
     );
 
     context.read<PengajuanModel>().tambahPengajuan(pengajuanBaru);
+    context.read<PengajuanCubit>().tambahPengajuan(pengajuanBaru);
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(

@@ -1,3 +1,6 @@
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../cubit/pengajuan_cubit.dart';
+import '../model/pengajuan_model.dart';
 import 'package:flutter/material.dart';
 import '../pages/halaman_beranda.dart';
 import '../pages/halaman_layanan.dart';
@@ -104,7 +107,7 @@ class _KerangkaNavigasiState extends State<KerangkaNavigasi> {
     return NavigationBar(
       selectedIndex: _indeksTerpilih,
       onDestinationSelected: _pilihTujuan,
-      destinations: const [
+      destinations: [
         NavigationDestination(
           icon: Icon(Icons.home_outlined),
           selectedIcon: Icon(Icons.home_rounded),
@@ -116,8 +119,26 @@ class _KerangkaNavigasiState extends State<KerangkaNavigasi> {
           label: 'Layanan',
         ),
         NavigationDestination(
-          icon: Icon(Icons.person_outline),
-          selectedIcon: Icon(Icons.person_rounded),
+          icon: BlocSelector<PengajuanCubit, List<ItemPengajuan>, int>(
+            selector: (state) => state.length,
+            builder: (context, count) {
+              return Badge(
+                label: Text('$count'),
+                isLabelVisible: count > 0,
+                child: const Icon(Icons.person_outline),
+              );
+            },
+          ),
+          selectedIcon: BlocSelector<PengajuanCubit, List<ItemPengajuan>, int>(
+            selector: (state) => state.length,
+            builder: (context, count) {
+              return Badge(
+                label: Text('$count'),
+                isLabelVisible: count > 0,
+                child: const Icon(Icons.person_rounded),
+              );
+            },
+          ),
           label: 'Warga',
         ),
       ],
@@ -139,7 +160,7 @@ class _KerangkaNavigasiState extends State<KerangkaNavigasi> {
               child: Icon(Icons.location_city_rounded),
             ),
           ),
-          destinations: const [
+          destinations: [
             NavigationRailDestination(
               icon: Icon(Icons.home_outlined),
               selectedIcon: Icon(Icons.home_rounded),
@@ -151,9 +172,27 @@ class _KerangkaNavigasiState extends State<KerangkaNavigasi> {
               label: Text('Layanan'),
             ),
             NavigationRailDestination(
-              icon: Icon(Icons.person_outline),
-              selectedIcon: Icon(Icons.person_rounded),
-              label: Text('Warga'),
+              icon: BlocSelector<PengajuanCubit, List<ItemPengajuan>, int>(
+                selector: (state) => state.length,
+                builder: (context, count) {
+                  return Badge(
+                    label: Text('$count'),
+                    isLabelVisible: count > 0,
+                    child: const Icon(Icons.person_outline),
+                  );
+                },
+              ),
+              selectedIcon: BlocSelector<PengajuanCubit, List<ItemPengajuan>, int>(
+                selector: (state) => state.length,
+                builder: (context, count) {
+                  return Badge(
+                    label: Text('$count'),
+                    isLabelVisible: count > 0,
+                    child: const Icon(Icons.person_rounded),
+                  );
+                },
+              ),
+              label: const Text('Warga'),
             ),
           ],
         ),

@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../cubit/favorit_cubit.dart';
+import '../cubit/pengajuan_cubit.dart';
+import '../cubit/theme_cubit.dart';
 import '../model/pengajuan_model.dart';
 import '../navigation/app_routes.dart';
 
@@ -9,15 +13,14 @@ class HalamanWarga extends StatelessWidget {
   // Palet 2-3 warna solid sederhana tanpa gradasi
   static const Color warnaUtama = Color(0xFF1E3A8A); // Deep Solid Navy
   static const Color warnaAksen = Color(0xFF475569); // Slate Grey
-  static const Color warnaLatar = Color(0xFFF8FAFC); // Neutral Grey
 
   @override
   Widget build(BuildContext context) {
     final pengajuanModel = context.watch<PengajuanModel>();
     final daftarPengajuan = pengajuanModel.daftarPengajuan;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: warnaLatar,
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -25,17 +28,20 @@ class HalamanWarga extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: isDark ? const Color(0xFF1E293B) : Colors.white,
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: const Color(0xFFCBD5E1), width: 1),
+              border: Border.all(
+                color: isDark ? const Color(0xFF334155) : const Color(0xFFCBD5E1),
+                width: 1,
+              ),
             ),
             child: Row(
               children: [
                 Container(
                   width: 56,
                   height: 56,
-                  decoration: const BoxDecoration(
-                    color: warnaUtama,
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF2563EB) : warnaUtama,
                     shape: BoxShape.circle,
                   ),
                   child: const Center(
@@ -46,20 +52,31 @@ class HalamanWarga extends StatelessWidget {
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
+                    children: [
                       Text(
                         'Falih Afnan Fauzi',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: isDark ? const Color(0xFFF8FAFC) : const Color(0xFF0F172A),
+                        ),
                       ),
-                      SizedBox(height: 2),
+                      const SizedBox(height: 2),
                       Text(
                         'NIM: 707012400017 • Kelas 48-03',
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: warnaUtama),
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: isDark ? const Color(0xFF60A5FA) : warnaUtama,
+                        ),
                       ),
-                      SizedBox(height: 2),
+                      const SizedBox(height: 2),
                       Text(
                         'D4 Sistem Informasi Kota Cerdas',
-                        style: TextStyle(fontSize: 11, color: warnaAksen),
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: isDark ? const Color(0xFF94A3B8) : warnaAksen,
+                        ),
                       ),
                     ],
                   ),
@@ -69,11 +86,73 @@ class HalamanWarga extends StatelessWidget {
           ),
           const SizedBox(height: 14),
 
+          // Sakelar Pengaturan Mode Gelap (ThemeCubit)
+          BlocBuilder<ThemeCubit, ThemeMode>(
+            builder: (context, themeMode) {
+              final isThemeDark = themeMode == ThemeMode.dark;
+              return Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: isDark ? const Color(0xFF334155) : const Color(0xFFCBD5E1),
+                    width: 1,
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          isThemeDark ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
+                          color: isThemeDark ? const Color(0xFF60A5FA) : warnaUtama,
+                          size: 22,
+                        ),
+                        const SizedBox(width: 12),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Mode Tampilan Gelap (Dark Theme)',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                color: isDark ? const Color(0xFFF8FAFC) : const Color(0xFF0F172A),
+                              ),
+                            ),
+                            Text(
+                              isThemeDark ? 'ThemeCubit: ThemeMode.dark aktif' : 'ThemeCubit: ThemeMode.light aktif',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: isDark ? const Color(0xFF94A3B8) : warnaAksen,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    Switch(
+                      value: isThemeDark,
+                      activeThumbColor: const Color(0xFF2563EB),
+                      onChanged: (val) {
+                        context.read<ThemeCubit>().toggleTheme();
+                      },
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 14),
+
           // Menu Cepat Akses Layanan Baru Modul 4
           Row(
             children: [
               _buildMenuAksesCepat(
                 context,
+                isDark: isDark,
                 judul: 'Tanya Petugas',
                 icon: Icons.chat_bubble_outline,
                 rute: AppRoutes.tanyaPetugas,
@@ -81,6 +160,7 @@ class HalamanWarga extends StatelessWidget {
               const SizedBox(width: 8),
               _buildMenuAksesCepat(
                 context,
+                isDark: isDark,
                 judul: 'Lokasi Kantor',
                 icon: Icons.map_outlined,
                 rute: AppRoutes.lokasiKantor,
@@ -88,6 +168,7 @@ class HalamanWarga extends StatelessWidget {
               const SizedBox(width: 8),
               _buildMenuAksesCepat(
                 context,
+                isDark: isDark,
                 judul: 'Statistik',
                 icon: Icons.bar_chart_outlined,
                 rute: AppRoutes.statistikLayanan,
@@ -96,35 +177,134 @@ class HalamanWarga extends StatelessWidget {
           ),
           const SizedBox(height: 20),
 
-          // Judul Seksi Riwayat Pengajuan
+          // Seksi Layanan Favorit Warga (FavoritCubit - Reaktif)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Layanan Favorit Warga',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+              ),
+              BlocBuilder<FavoritCubit, Set<String>>(
+                builder: (context, favs) {
+                  return Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFEAB308),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      '${favs.length} Favorit',
+                      style: const TextStyle(color: Color(0xFF0F172A), fontSize: 11, fontWeight: FontWeight.bold),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Layanan yang Anda tandai bintang di tab Layanan (dikelola via FavoritCubit).',
+            style: TextStyle(fontSize: 11, color: isDark ? const Color(0xFF94A3B8) : warnaAksen),
+          ),
+          const SizedBox(height: 10),
+
+          BlocBuilder<FavoritCubit, Set<String>>(
+            builder: (context, favs) {
+              if (favs.isEmpty) {
+                return Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: isDark ? const Color(0xFF334155) : const Color(0xFFCBD5E1),
+                    ),
+                  ),
+                  child: const Center(
+                    child: Text(
+                      'Belum ada layanan favorit. Ketuk ikon bintang pada tab Layanan.',
+                      style: TextStyle(fontSize: 12),
+                    ),
+                  ),
+                );
+              }
+              return Column(
+                children: favs.map((namaLayanan) {
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: isDark ? const Color(0xFF334155) : const Color(0xFFCBD5E1),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        const CircleAvatar(
+                          radius: 16,
+                          backgroundColor: Color(0xFFFEF3C7),
+                          child: Icon(Icons.star_rounded, color: Color(0xFFEAB308), size: 20),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            namaLayanan,
+                            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
+                          tooltip: 'Hapus Favorit',
+                          onPressed: () {
+                            context.read<FavoritCubit>().batalTandai(namaLayanan);
+                          },
+                        ),
+                      ],
+                    ),
+                  );
+                }).toList(),
+              );
+            },
+          ),
+          const SizedBox(height: 20),
+
+          // Judul Seksi Riwayat Pengajuan Layanan
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text(
                 'Riwayat Pengajuan Layanan',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Color(0xFF0F172A)),
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: warnaUtama,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  '${pengajuanModel.totalPengajuan} Berkas',
-                  style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
-                ),
+              BlocSelector<PengajuanCubit, List<ItemPengajuan>, int>(
+                selector: (state) => state.length,
+                builder: (context, total) {
+                  return Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF2563EB) : warnaUtama,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      '$total Berkas',
+                      style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                    ),
+                  );
+                },
               ),
             ],
           ),
           const SizedBox(height: 4),
-          const Text(
+          Text(
             'Petunjuk: Ketuk (tap) untuk rincian, tekan lama (long-press) untuk tandai selesai.',
-            style: TextStyle(fontSize: 11, color: warnaAksen),
+            style: TextStyle(fontSize: 11, color: isDark ? const Color(0xFF94A3B8) : warnaAksen),
           ),
           const SizedBox(height: 10),
 
-          // Daftar Kartu Riwayat Pengajuan dengan GestureDetector
+          // Daftar Kartu Riwayat Pengajuan
           if (daftarPengajuan.isEmpty)
             Container(
               padding: const EdgeInsets.all(24),
@@ -132,11 +312,10 @@ class HalamanWarga extends StatelessWidget {
               child: const Text('Belum ada riwayat permohonan layanan.'),
             )
           else
-            ...daftarPengajuan.map((item) => _buildKartuPengajuan(context, item)),
+            ...daftarPengajuan.map((item) => _buildKartuPengajuan(context, item, isDark)),
           const SizedBox(height: 60), // Ruang untuk FAB
         ],
       ),
-      // FloatingActionButton membuka formulir pengajuan baru menggunakan named route
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           Navigator.pushNamed(
@@ -150,7 +329,7 @@ class HalamanWarga extends StatelessWidget {
             },
           );
         },
-        backgroundColor: warnaUtama,
+        backgroundColor: isDark ? const Color(0xFF2563EB) : warnaUtama,
         foregroundColor: Colors.white,
         elevation: 2,
         icon: const Icon(Icons.add),
@@ -162,7 +341,13 @@ class HalamanWarga extends StatelessWidget {
     );
   }
 
-  Widget _buildMenuAksesCepat(BuildContext context, {required String judul, required IconData icon, required String rute}) {
+  Widget _buildMenuAksesCepat(
+    BuildContext context, {
+    required bool isDark,
+    required String judul,
+    required IconData icon,
+    required String rute,
+  }) {
     return Expanded(
       child: InkWell(
         onTap: () => Navigator.pushNamed(context, rute),
@@ -170,17 +355,24 @@ class HalamanWarga extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: isDark ? const Color(0xFF1E293B) : Colors.white,
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: const Color(0xFFCBD5E1), width: 1),
+            border: Border.all(
+              color: isDark ? const Color(0xFF334155) : const Color(0xFFCBD5E1),
+              width: 1,
+            ),
           ),
           child: Column(
             children: [
-              Icon(icon, color: warnaUtama, size: 22),
+              Icon(icon, color: isDark ? const Color(0xFF60A5FA) : warnaUtama, size: 22),
               const SizedBox(height: 4),
               Text(
                 judul,
-                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? const Color(0xFFF8FAFC) : const Color(0xFF0F172A),
+                ),
               ),
             ],
           ),
@@ -189,20 +381,19 @@ class HalamanWarga extends StatelessWidget {
     );
   }
 
-  Widget _buildKartuPengajuan(BuildContext context, ItemPengajuan item) {
+  Widget _buildKartuPengajuan(BuildContext context, ItemPengajuan item, bool isDark) {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       child: GestureDetector(
-        // onTap: Membuka dialog rincian pengajuan
         onTap: () {
           showDialog(
             context: context,
             builder: (ctx) => AlertDialog(
-              backgroundColor: Colors.white,
+              backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               title: Row(
                 children: [
-                  const Icon(Icons.info_outline, color: warnaUtama, size: 22),
+                  Icon(Icons.info_outline, color: isDark ? const Color(0xFF60A5FA) : warnaUtama, size: 22),
                   const SizedBox(width: 8),
                   const Text('Rincian Pengajuan', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 ],
@@ -223,13 +414,12 @@ class HalamanWarga extends StatelessWidget {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(ctx),
-                  child: const Text('Tutup', style: TextStyle(color: warnaUtama, fontWeight: FontWeight.bold)),
+                  child: Text('Tutup', style: TextStyle(color: isDark ? const Color(0xFF60A5FA) : warnaUtama, fontWeight: FontWeight.bold)),
                 ),
               ],
             ),
           );
         },
-        // onLongPress: Menandai pengajuan selesai ditindaklanjuti
         onLongPress: () {
           if (!item.isSelesai) {
             context.read<PengajuanModel>().tandaiSelesai(item.id);
@@ -245,11 +435,11 @@ class HalamanWarga extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: isDark ? const Color(0xFF1E293B) : Colors.white,
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
-              color: item.isSelesai ? warnaUtama : const Color(0xFFCBD5E1),
-              width: item.isSelesai ? 1.5 : 1,
+              color: isDark ? const Color(0xFF334155) : const Color(0xFFCBD5E1),
+              width: 1,
             ),
           ),
           child: Column(
@@ -260,32 +450,25 @@ class HalamanWarga extends StatelessWidget {
                 children: [
                   Text(
                     item.id,
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: warnaUtama),
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? const Color(0xFF94A3B8) : warnaAksen,
+                    ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
-                      color: item.isSelesai ? warnaUtama : const Color(0xFFE2E8F0),
+                      color: item.isSelesai ? const Color(0xFFDCFCE7) : const Color(0xFFFEF3C7),
                       borderRadius: BorderRadius.circular(4),
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          item.isSelesai ? Icons.check_circle : Icons.hourglass_top,
-                          size: 12,
-                          color: item.isSelesai ? Colors.white : warnaAksen,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          item.isSelesai ? 'Selesai' : 'Diproses',
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                            color: item.isSelesai ? Colors.white : warnaAksen,
-                          ),
-                        ),
-                      ],
+                    child: Text(
+                      item.isSelesai ? 'Selesai' : 'Sedang Diproses',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: item.isSelesai ? const Color(0xFF166534) : const Color(0xFF92400E),
+                      ),
                     ),
                   ),
                 ],
@@ -293,12 +476,21 @@ class HalamanWarga extends StatelessWidget {
               const SizedBox(height: 6),
               Text(
                 item.jenisLayanan,
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF0F172A)),
+                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
               ),
-              const SizedBox(height: 3),
-              Text(
-                'Pemohon: ${item.namaLengkap} • Sesi: ${item.sesiKunjungan}',
-                style: const TextStyle(fontSize: 11, color: warnaAksen),
+              const SizedBox(height: 4),
+              Row(
+                children: [
+                  const Icon(Icons.access_time, size: 12, color: Colors.grey),
+                  const SizedBox(width: 4),
+                  Text(
+                    '${item.bidang} • ${item.sesiKunjungan}',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: isDark ? const Color(0xFF94A3B8) : warnaAksen,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -307,19 +499,22 @@ class HalamanWarga extends StatelessWidget {
     );
   }
 
-  Widget _buildDialogBaris(String label, String value) {
+  Widget _buildDialogBaris(String label, String nilai) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 3),
+      padding: const EdgeInsets.symmetric(vertical: 2.5),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 90,
-            child: Text(label, style: const TextStyle(fontSize: 11, color: warnaAksen)),
+            width: 110,
+            child: Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
           ),
-          const Text(': ', style: TextStyle(fontSize: 11, color: warnaAksen)),
+          const Text(': ', style: TextStyle(fontSize: 12, color: Colors.grey)),
           Expanded(
-            child: Text(value, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF0F172A))),
+            child: Text(
+              nilai,
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+            ),
           ),
         ],
       ),
